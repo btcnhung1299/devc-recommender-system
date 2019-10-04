@@ -1,0 +1,8 @@
+gunicorn==19.9.0
+Flask
+Flask-SQLAlchemy
+Flask-Babel
+Flask-JSON
+flask-JWT-Extended
+Werkzeug
+PyMySQL
