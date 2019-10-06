@@ -6,12 +6,28 @@ from helper import normalize_location, normalize_category, normalize_param, pric
 
 # Import python standard libraries
 from datetime import datetime, date
+import json
+
+# Import libaries for modeling
+import pickle
+import pandas as pd
+from random import randint
 
 # Create an instance of SQLAlchemy
 db = SQLAlchemy()
 
 # Global variables
 page_size = 20
+
+# Import model for classification
+with open('model/model.pkl', 'rb') as model:
+   classify_click = pickle.load(model)
+
+with open('encoding_tbl/config_ctr.json') as json_file:
+   ctr_dict = json.load(json_file)
+
+with open('encoding_tbl/config_price_vs_avg.json') as json_file:
+   price_vs_avg_dict = json.load(json_file)
 
 # --------------------- HELPER FUNCTIONS -----------------
 def save_to_db(model):
@@ -277,7 +293,64 @@ class Ad(db.Model):
 
       infor = [ad.get_summary() for ad in ad_list]
       return infor
-      
+
+   def get_avg_price(self):
+      try:
+         p = price_vs_avg_dict[str(self.adlist_id)]
+         print('yes')
+      except:
+         p = self.price
+      return p      
+
+   # Classify if the current ad will be clicked by a user
+   def will_click(self, user_fingerprint):
+      inp = dict()
+      inp['category_id'] = self.category_id
+      inp['region'] = self.region_id
+      inp['price_vs_avg'] = self.price - self.get_avg_price()
+      inp['seller_type'] = (0 if self.seller_type == 'private' else 1)
+      inp['user_fingerprint'] = 24
+      inp['content_length'] = len(self.content)
+      inp['subject_length'] = len(self.subject)
+      inp['price'] = self.price
+      try:
+         inp['crt'] = ctr_dict['click'][str(self.adlist_id)]
+         print(inp['crt'])
+      except:
+         inp['crt'] = 0
+
+      X = pd.Series(inp).to_frame().T
+      X = X.reindex(sorted(X.columns), axis=1)
+      return classify_click.predict(X)[0]      
+
+   # Return list of recommended ads
+   @staticmethod
+   def general_recommend(user_fingerprint):
+      limit_batch = 40
+      recent_ads = db.session.query(Ad).order_by(desc(Ad.adlist_id)).limit(limit_batch)
+      marked_ads = [0] * limit_batch
+      n_ads = 0
+      choose_ads = []
+
+      # If there is less than 5 ads to be recommended, randomize them
+      while len(choose_ads) < 5 and n_ads < limit_batch:
+         i = randint(0, limit_batch)
+         n_ads += 1
+         if marked_ads[i] == 0:
+            if recent_ads[i].will_click(user_fingerprint):
+               choose_ads.append(recent_ads[i].get_summary())
+               marked_ads[i] = 1
+            else:
+               marked_ads[i] = -1
+           
+      for i in range(limit_batch):
+         if len(choose_ads) == 5:
+            break
+         if marked_ads[i] == -1:
+            choose_ads.append(recent_ads[i].get_summary())
+
+      return choose_ads[:5]
+
 
 # ---------------------- AD-PARAM ------------------------
 class AdParam(db.Model):

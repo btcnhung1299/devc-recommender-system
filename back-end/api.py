@@ -192,6 +192,16 @@ def subscribe():
    return json_response(status_=200, message='Successfully subscribed')
 
 
+@ads.route('/general-recommend', methods=['GET'])
+def get_general_recommend():
+   try:
+      user_fingerprint = request.args.get('user_fingerprint')
+      list_recommend = Ad.general_recommend(user_fingerprint)
+   except Exception as error:
+      return json_response(status_=404, error=str(error))
+   return json_response(status_=200, ads=list_recommend)
+
+
 @log.route('/create', methods=['POST'])
 def create_log():
    try:
