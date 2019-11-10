@@ -1,13 +1,28 @@
-# Import flask
 from flask import Blueprint, request
+from database import *
 
+"""Register blueprints for url routing
+"""
+account  = Blueprint('account', __name__) 
+user     = Blueprint('user', __name__)
+ads      = Blueprint('ads', __name__)
+log      = Blueprint('logging', __name__)
+
+
+"""Initialize instance of jwt manager and json formatter
+without app binding
+"""
+jwt      = JWTManager()
+json     = FlaskJSON()
+
+"""
 # Import flask extensions
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity, get_jti, get_raw_jwt
 from flask_json import FlaskJSON, json_response
 from werkzeug.security import safe_str_cmp
 
 # Import wrapper
-from db_model import db, hash_password, User, Ad, AdEvent
+from database import *
 
 # Import error handlers
 from sqlalchemy import exc
@@ -16,40 +31,14 @@ from sqlalchemy.orm import exc as orm_exc
 # Import standard libraries
 import datetime
 
-# Create instances of JWTManager and JSON
-jwt = JWTManager()
-json = FlaskJSON()
+"""
 
-# Flask blueprints
-account  = Blueprint('account', __name__) 
-user     = Blueprint('user', __name__)
-ads      = Blueprint('ads', __name__)
-log      = Blueprint('logging', __name__)
-
+"""
 # Init a blacklist to invalidate a token
 blacklist_tokens = set()
 
 
 # --------------------- HELPER FUNCTIONS --------------------
-def authenticate(phone, password):
-   try:
-      user = db.session.query(User.user_id, User.password, User.name).\
-                              filter(User.phone == phone).one()
-      db_password = user.password
-      password    = hash_password(password)
-   except AttributeError:
-      raise Exception('Inconsistent attributes query')
-      return
-   except:
-      raise Exception('Wrong username or password')
-      return
-
-   if not safe_str_cmp(password, db_password):
-      raise Exception('Wrong username or password')
-      return
-   
-   return (user.user_id, user.name)
-
 @jwt.token_in_blacklist_loader
 def is_expired_token(token):
    try:
@@ -60,17 +49,17 @@ def is_expired_token(token):
    if jti in blacklist_tokens:
       return True
    return False
-
+"""
 # -------------------------- / ---------------------------
 @account.route('/register', methods=['POST'])
 def register():
    try:
-      User.init_from_request(request.json)
+      database.user.User.init_from_request(request.json)
    except Exception as error:
       return json_response(status_=404, error=str(error))
    return json_response(status_=200, message='Successfully registered')
 
-
+"""
 @account.route('/login', methods=['POST'])
 def login():
    try:
@@ -81,8 +70,7 @@ def login():
       return json_response(status_=404, error=str(error))
 
    expires        = datetime.timedelta(days=1)
-   access_token   = create_access_token(identity=user_id, \
-                                        expires_delta=expires, fresh=True)
+   access_token   = create_access_token(identity=user_id, expires_delta=expires, fresh=True)
    
    try:
       access_jti  = get_jti(access_token)
@@ -90,8 +78,7 @@ def login():
          blacklist_tokens.remove(access_jti)
    except Exception as error:
       return json_response(status_=404, error=str(error))
-   return json_response(status_=200, username = user_name, \
-                        access_token=access_token)
+   return json_response(status_=200, username=user_name, access_token=access_token)
 
 
 @account.route('/logout', methods=['DELETE'])
@@ -209,3 +196,4 @@ def create_log():
    except Exception as error:
       return json_response(status_=404, error=str(error))
    return json_response(status_=200, message='Successfully logged')
+"""

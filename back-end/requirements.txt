@@ -2,7 +2,7 @@ scikit-learn
 numpy
 xgboost
 pandas
-gunicorn==19.9.0
+gunicorn
 Flask
 Flask-SQLAlchemy
 Flask-Babel

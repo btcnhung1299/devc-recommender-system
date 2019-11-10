@@ -59,24 +59,13 @@ def duration_to_str(previous_date):
 
 
 def date_from_str(date):
-   try:
-      day, month, year = date['day'], date['month'], date['year']
-   except KeyError:
-      raise Exception('Wrong date format')
-      return 
-
-   ddmmyy_str  = '{}/{}/{} 00:00'.format(day, month, year)
+   day, month, year  = date['day'], date['month'], date['year']
+   ddmmyy_str        = '{}/{}/{} 00:00'.format(day, month, year)
    return datetime.strptime(ddmmyy_str, '%d/%m/%Y %H:%M').date()
 
 
-salt = 'Cahopteam9812-D15v6C'
 def hash_password(password):
-   password = (password + salt).encode()
+   salt        = 'Cahopteam9812-D15v6C'
+   password    = (password + salt).encode()
    return hashlib.md5(password).hexdigest()
 
-
-def parse_or_pass(obj, name, request):
-   try:
-      setattr(obj, name, request[name])
-   except KeyError:
-      pass
