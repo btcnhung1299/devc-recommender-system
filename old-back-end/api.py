@@ -1,5 +1,7 @@
 from flask import Blueprint, request
-from database import *
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity, get_jti, get_raw_jwt
+from flask_json import FlaskJSON, json_response
+
 
 """Register blueprints for url routing
 """
@@ -17,8 +19,6 @@ json     = FlaskJSON()
 
 """
 # Import flask extensions
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity, get_jti, get_raw_jwt
-from flask_json import FlaskJSON, json_response
 from werkzeug.security import safe_str_cmp
 
 # Import wrapper
@@ -49,37 +49,6 @@ def is_expired_token(token):
    if jti in blacklist_tokens:
       return True
    return False
-"""
-# -------------------------- / ---------------------------
-@account.route('/register', methods=['POST'])
-def register():
-   try:
-      database.user.User.init_from_request(request.json)
-   except Exception as error:
-      return json_response(status_=404, error=str(error))
-   return json_response(status_=200, message='Successfully registered')
-
-"""
-@account.route('/login', methods=['POST'])
-def login():
-   try:
-      phone                = request.json['phone']
-      password             = request.json['password']
-      user_id, user_name   = authenticate(phone, password)
-   except Exception as error:
-      return json_response(status_=404, error=str(error))
-
-   expires        = datetime.timedelta(days=1)
-   access_token   = create_access_token(identity=user_id, expires_delta=expires, fresh=True)
-   
-   try:
-      access_jti  = get_jti(access_token)
-      if access_jti in blacklist_tokens:
-         blacklist_tokens.remove(access_jti)
-   except Exception as error:
-      return json_response(status_=404, error=str(error))
-   return json_response(status_=200, username=user_name, access_token=access_token)
-
 
 @account.route('/logout', methods=['DELETE'])
 @jwt_required

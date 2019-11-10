@@ -1,0 +1,8 @@
+import os
+
+#SQLALCHEMY_DATABASE_URI = os.environ['SQLALCHEMY_DATABASE_URI']
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:pw@localhost/db?charset=utf8mb4'
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+JWT_SECRET_KEY = 'super-secret'
+JWT_BLACKLIST_ENABLED = True
+JWT_BLACKLIST_TOKEN_CHECKS = ['access']
