@@ -26,6 +26,22 @@ class User(db.Model):
       self.phone     = phone
       self.password  = password 
 
+   def get_basic_profile(self):
+      area_name, region_name  = processing.annot_loc(self.area_id, self.region_id)
+      profile                 = {'phone': self.phone, 'name': self.name, 'avatar': self.avatar, \
+                                 'region': region_name, 'area': area_name}
+      return profile
+      
+   def get_profile(self):
+      """Get full user profile which extend from summary profile
+      with user's birthdate and gender
+      """
+      birth_date  = {'day': self.birth_date.day, 'month': self.birth_date.month, 'year': self.birth_date.year}
+      profile     = self.get_basic_profile()
+      profile['birth_date']   = birth_date
+      profile['gender']       = self.gender
+      return profile
+
    def update_from_request(self, args):
       """Update user profile by parsing request arguments
       and commit changes to database
@@ -44,22 +60,9 @@ class User(db.Model):
          if val is None:
             continue        
          if attr  == 'birth_date':
-            val   = date_from_str(val)
+            val   = processing.date_from_str(val)
          setattr(self, attr, val)
       save_to_db(self)
-
-   def get_basic_profile(self):
-      area_name, region_name = normalize_location(self.area_id, self.region_id)
-      profile = {'phone': self.phone, 'name': self.name, 'avatar': self.avatar, 'region': region_name, 'area': area_name}
-      return profile
-      
-   # Get user profile
-   def get_profile(self):
-      profile = self.get_basic_profile()
-      birth_date = {'day': self.birth_date.day, 'month': self.birth_date.month, 'year': self.birth_date.year}
-      profile['birth_date'] = birth_date
-      profile['gender'] = self.gender
-      return profile
 
    @staticmethod
    def init_from_request(args):

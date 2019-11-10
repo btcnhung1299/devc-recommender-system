@@ -2,7 +2,7 @@ from flask import Flask
 
 import api
 import database.views as views
-
+import processing
 
 """Create an application object and load configurations from file
 """
@@ -16,6 +16,7 @@ babel processing, JWT tokenizing and json formatting
 views.db.init_app(app)
 api.json.init_app(app)
 api.jwt.init_app(app)
+processing.babel.init_app(app)
 
 """Create blueprints for url routing:
 - https://<domain_name.xyz>/
