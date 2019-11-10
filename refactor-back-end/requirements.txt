@@ -1,0 +1,12 @@
+scikit-learn
+numpy
+xgboost
+pandas
+gunicorn
+Flask
+Flask-SQLAlchemy
+Flask-Babel
+Flask-JSON
+flask-JWT-Extended
+Werkzeug
+PyMySQL

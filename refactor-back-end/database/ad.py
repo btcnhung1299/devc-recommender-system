@@ -1,11 +1,14 @@
 from datetime import datetime
 
 from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy import desc
 
 import database.views as views
 import processing
 from .db_model import db
 from .utils import save_to_db
+
+page_size = 15
 
 class Ad(db.Model):
    __tablename__     = 'ad'
@@ -51,8 +54,8 @@ class Ad(db.Model):
 
       summary = {'subject': self.subject, 'price_str': price_str, 'region': region_name, 'area': area_name, \
                  'is_sticky': self.is_sticky, 'seller_type': self.seller_type, 'category_name': category_name, \
-                 'main_category_name': main_category_name, 'number_of_img': self.number_of_img, 'create_elapse': create_at_str, \
-                 'thumbnail_img_url': self.thumbnail_img_url, 'adlist_id': self.adlist_id}
+                 'main_category_name': main_category_name, 'number_of_img': self.number_of_img, 'adlist_id': self.adlist_id, \
+                 'create_elapse': create_at_str, 'thumbnail_img_url': self.thumbnail_img_url, 'adlist_id': self.adlist_id}
  
       summary['publisher']       = user.get_basic_profile()
       summary['publisher']['id'] = self.owner_id
@@ -62,7 +65,7 @@ class Ad(db.Model):
       infor                = self.get_summary()
       infor['date']        = self.create_at
       infor['content']     = self.content
-#      infor['parameters']  = views.AdParam.get_infor(self.adlist_id, self.category_id)
+      infor['parameters']  = views.AdParam.get_infor(self.adlist_id, self.category_id)
       return infor
 
    @hybrid_method
@@ -79,8 +82,6 @@ class Ad(db.Model):
       cmp_res     &= (max_price == None or cls.price <= max_price)
       cmp_res     &= (seller_type == None or cls.seller_type == seller_type)
       return cmp_res
-
-
 
    @staticmethod
    def init_from_request(owner_id, args):
@@ -102,19 +103,38 @@ class Ad(db.Model):
                   image_url=image_url, region_id=region_id, area_id=area_id, adtype=adtype, thumbnail_img_url=thumbnail_img_url)
 
       save_to_db(new_ad)
-      #AdParam.init_from_request(adlist_id=new_ad.adlist_id, request=params)
+      views.AdParam.init_from_request(adlist_id=new_ad.adlist_id, request=params)
    
    @staticmethod
-   def display(main_category_id, category_id, page, min_price, max_price, brand_id, model_id, seller_type, region_id, area_id):
-      if page     == None:
-         page     = 0
+   def display(args):
+      """Get list of ads which satisfy certain filter and divide by page.
+      Each page of the same page size, defined by [page_start, page_end].
 
-      s_ad_pos    = page * page_size
-      e_ad_pos    = s_ad_pos + page_size
+      Return:
+         InfoList: list of ad summaries within current page.
+
+      Raises:
+         QueryFail: Can't query with current parameters.
+      """
+      main_category_id     = args.get('main_category', type=int)
+      page                 = args.get('page', type=int)
+      category_id          = args.get('category', type=int)
+      region_id            = args.get('region', type=int)
+      area_id              = args.get('area', type=int)
+      min_price            = args.get('min_price', type=int)
+      max_price            = args.get('max_price', type=int)
+      brand_id             = args.get('brand', type=int)
+      model_id             = args.get('model', type=int)
+      seller_type          = args.get('seller_type')
+
+      page                 = (0 if page == None else page)
+      page_start           = page * page_size
+      page_end             = page_start + page_size
+
       try:
          ad_list  = db.session.query(Ad).order_by(desc(Ad.adlist_id)).filter(Ad.belongs(main_category_id=main_category_id, \
                                     category_id=category_id, min_price=min_price, max_price=max_price, seller_type=seller_type, \
-                                    region_id=region_id, area_id=area_id)).slice(s_ad_pos, e_ad_pos)
+                                    region_id=region_id, area_id=area_id)).slice(page_start, page_end)
       except Exception as error:
          raise Exception('QueryFail: {}', str(error))
          return

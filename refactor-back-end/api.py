@@ -122,3 +122,12 @@ def edit_user_profile():
    except Exception as error:
       return json_response(status_=404, error=str(error))
    return json_response(status_=200, message='Succesfully updated profile')
+
+
+@ads.route('/adlisting', methods=['GET'])
+def display_ads():
+   try:
+      list_ad_infor = views.Ad.display(request.args)
+   except Exception as error:
+      return json_response(status_=404, error=str(error))
+   return json_response(status_=200, list_ad_infor=list_ad_infor)

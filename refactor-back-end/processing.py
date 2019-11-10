@@ -48,7 +48,7 @@ def annot_loc(area_id, region_id):
 
 
 with open('encoding_tbl/config_category.json', encoding='utf8') as json_file:
-   category_cs    = json.load(json_file)
+   category_cs       = json.load(json_file)
 
 def annot_cat(category_id, main_category_id):
    if category_id is None or main_category_id is None:
@@ -58,3 +58,18 @@ def annot_cat(category_id, main_category_id):
    main_category_name      = category_cs[main_category]['main_category_name']
    category_name           = category_cs[main_category]['category'][category]
    return (category_name, main_category_name)
+
+
+with open('encoding_tbl/config_adparam.json', encoding='utf8') as json_file:
+   adparam_cs        = json.load(json_file)
+
+def annot_param(category_id, name, value):
+   category          = str(category_id)
+   try:
+      param_val      = adparam_cs[category][name][value]
+   except:
+      try:
+         param_val   = adparam_cs['0'][name][value]
+      except:
+         param_val   = value
+   return param_val
