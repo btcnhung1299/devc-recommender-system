@@ -10,7 +10,7 @@ import database.views as views
 account  = Blueprint('account', __name__) 
 user     = Blueprint('user', __name__)
 ads      = Blueprint('ads', __name__)
-log      = Blueprint('logging', __name__)
+events   = Blueprint('events', __name__)
 
 
 json     = FlaskJSON()
@@ -45,6 +45,16 @@ def post():
    except Exception as error:
       return json_response(status_=404, error=str(error))
    return json_response(status_=200, message='Successfully posted')
+
+
+@events.route('/create', methods=['POST'])
+def trigger():
+   try:
+      views.Event.init_from_request(args=request.json)
+   except Exception as error:
+      print(str(error))
+      return json_response(status_=404, error=str(error))
+   return json_response(status_=200, message='Successfully recorded event')
 
 
 @account.route('/login', methods=['POST'])
@@ -131,3 +141,4 @@ def display_ads():
    except Exception as error:
       return json_response(status_=404, error=str(error))
    return json_response(status_=200, list_ad_infor=list_ad_infor)
+
