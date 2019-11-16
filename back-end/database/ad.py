@@ -29,13 +29,16 @@ class Ad(db.Model):
    region_id         = db.Column(db.Integer)
    area_id           = db.Column(db.Integer)
 
-   def __init__(self, owner_id, main_category_id, category_id, adtype, seller_type, subject, price, content, number_of_img, \
-                image_url, thumbnail_img_url, region_id, area_id):
+   def __init__(self, adlist_id, owner_id, main_category_id, category_id, adtype, seller_type, 
+                subject, price, content, number_of_img, create_at, region_id, area_id,
+                image_url, thumbnail_img_url):
+      self.adlist_id          = adlist_id
       self.owner_id           = owner_id
       self.main_category_id   = main_category_id
       self.category_id        = category_id
       self.seller_type        = seller_type
       self.adtype             = adtype
+      self.create_at          = create_at
       self.subject            = subject
       self.price              = price
       self.content            = content
@@ -86,9 +89,11 @@ class Ad(db.Model):
    @staticmethod
    def init_from_request(owner_id, args):
       basics, params       = args['basics'], args['parameters']
+      adlist_id            = basics['adlist_id']
       main_category_id     = basics['main_category_id']
       category_id          = basics['category_id']
       adtype               = basics['adtype']
+      create_at            = basics['create_at']
       seller_type          = basics['seller_type']
       subject              = basics['subject']
       price                = basics['price']
@@ -98,9 +103,10 @@ class Ad(db.Model):
       thumbnail_img_url    = basics['thumbnail_img_url']
       region_id            = basics['region_id']
       area_id              = basics['area_id']
-      new_ad = Ad(owner_id=owner_id, seller_type=seller_type, main_category_id=main_category_id, price=price, \
-                  category_id=category_id, subject=subject, content=content, number_of_img=number_of_img, \
-                  image_url=image_url, region_id=region_id, area_id=area_id, adtype=adtype, thumbnail_img_url=thumbnail_img_url)
+      new_ad = Ad(adlist_id=adlist_id, owner_id=owner_id, seller_type=seller_type, price=price,
+                  main_category_id=main_category_id, category_id=category_id, adtype=adtype,
+                  subject=subject, content=content, region_id=region_id, area_id=area_id, create_at=create_at,
+                  image_url=image_url, number_of_img=number_of_img, thumbnail_img_url=thumbnail_img_url)
 
       save_to_db(new_ad)
       views.AdParam.init_from_request(adlist_id=new_ad.adlist_id, request=params)
