@@ -1,16 +1,20 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+from itertools import count
 
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy import desc
 
-import database.views as views
+from database import views
 import processing
 from .db_model import db
 from .utils import save_to_db
 
 page_size = 15
+lastest_adlist_id = 62666259
 
 class Ad(db.Model):
+   _counter          = count(lastest_adlist_id)
+
    __tablename__     = 'ad'
    adlist_id         = db.Column(db.Integer, primary_key=True)
    owner_id          = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
@@ -29,16 +33,16 @@ class Ad(db.Model):
    region_id         = db.Column(db.Integer)
    area_id           = db.Column(db.Integer)
 
-   def __init__(self, adlist_id, owner_id, main_category_id, category_id, adtype, seller_type, 
-                subject, price, content, number_of_img, create_at, region_id, area_id,
+   def __init__(self, owner_id, main_category_id, category_id, adtype, seller_type, 
+                subject, price, content, number_of_img, region_id, area_id,
                 image_url, thumbnail_img_url):
-      self.adlist_id          = adlist_id
+      self.adlist_id          = next(self._counter)
       self.owner_id           = owner_id
       self.main_category_id   = main_category_id
       self.category_id        = category_id
       self.seller_type        = seller_type
       self.adtype             = adtype
-      self.create_at          = create_at
+      self.create_at          = datetime.utcnow() + timedelta(hours=7)
       self.subject            = subject
       self.price              = price
       self.content            = content
@@ -89,11 +93,9 @@ class Ad(db.Model):
    @staticmethod
    def init_from_request(owner_id, args):
       basics, params       = args['basics'], args['parameters']
-      adlist_id            = basics['adlist_id']
       main_category_id     = basics['main_category_id']
       category_id          = basics['category_id']
       adtype               = basics['adtype']
-      create_at            = basics['create_at']
       seller_type          = basics['seller_type']
       subject              = basics['subject']
       price                = basics['price']
@@ -103,9 +105,9 @@ class Ad(db.Model):
       thumbnail_img_url    = basics['thumbnail_img_url']
       region_id            = basics['region_id']
       area_id              = basics['area_id']
-      new_ad = Ad(adlist_id=adlist_id, owner_id=owner_id, seller_type=seller_type, price=price,
+      new_ad = Ad(owner_id=owner_id, seller_type=seller_type, price=price,
                   main_category_id=main_category_id, category_id=category_id, adtype=adtype,
-                  subject=subject, content=content, region_id=region_id, area_id=area_id, create_at=create_at,
+                  subject=subject, content=content, region_id=region_id, area_id=area_id,
                   image_url=image_url, number_of_img=number_of_img, thumbnail_img_url=thumbnail_img_url)
 
       save_to_db(new_ad)
