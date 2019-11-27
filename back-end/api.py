@@ -7,6 +7,7 @@ from flask_json import FlaskJSON, json_response
 import database.views as views
 
 
+# Register blueprints for URL routing
 account  = Blueprint('account', __name__) 
 user     = Blueprint('user', __name__)
 ads      = Blueprint('ads', __name__)
@@ -52,7 +53,6 @@ def trigger():
    try:
       views.Event.init_from_request(args=request.json)
    except Exception as error:
-      print(str(error))
       return json_response(status_=404, error=str(error))
    return json_response(status_=200, message='Successfully recorded event')
 
@@ -64,6 +64,7 @@ def login():
    A newly provided access token must be removed from blacklist tokens of
    last sessiong.
    """
+
    try:
       phone                = request.json['phone']
       password             = request.json['password']
