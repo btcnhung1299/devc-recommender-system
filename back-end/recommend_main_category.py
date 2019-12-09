@@ -73,15 +73,17 @@ def interest_by_category(user, cat):
             
       interest_t = stats[user]['by_category'][cat]['CLICK'][t] * stats[user]['by_category'][cat]['LOAD'][t]
       interest_t *= total_click_t
-      interest_t /= total_load_t
+      interest_t = (0 if total_load_t * total_click_t == 0 else interest_t / total_load_t)
 
       numerator += interest_t
       denominator += total_click_t
 
-   return numerator / denominator 
+   return (0 if numerator * denominator == 0 else numerator / denominator)
 
 
 def recommend_main_category(user):
+   if user not in stats:
+      create_new_history(user)
    interests = [(interest_by_category(user, cat), cat) for cat in range(1, NUM_CATEGORY + 1)]
    interests.sort(reverse=True)
    return [cat for interest, cat in interests]

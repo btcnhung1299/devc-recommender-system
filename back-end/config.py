@@ -1,7 +1,7 @@
 import os
 
-#SQLALCHEMY_DATABASE_URI = os.environ['SQLALCHEMY_DATABASE_URI']
-SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:pw@localhost/db?charset=utf8mb4'
+SQLALCHEMY_DATABASE_URI = os.environ['SQLALCHEMY_DATABASE_URI']
+#SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:pw@localhost/db?charset=utf8mb4'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 JWT_SECRET_KEY = 'cahope141219'
 JWT_BLACKLIST_ENABLED = True

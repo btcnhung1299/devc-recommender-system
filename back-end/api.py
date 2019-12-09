@@ -27,7 +27,7 @@ def recommend_by_main_category():
       user_fp = request.args.get('user_fingerprint')
       list_main_category = views.User.get_recommended_main_category(user_fp)
    except Exception as error:
-      return json_response(status_=404, error=str(erro))
+      return json_response(status_=404, error=str(error))
    return json_response(status_=200, priority_main_category=list_main_category)
 
 
