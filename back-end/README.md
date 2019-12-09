@@ -38,7 +38,7 @@ flask run
 ```
 
 # Data Schema
-<img src="./database/db_schema.png" height="270">
+<align="center"><img src="./database/db_schema.png" width="600"></align>
 
 # API Reference
 See more at [API Document](./api_reference.md).
