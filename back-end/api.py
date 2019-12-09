@@ -8,21 +8,33 @@ import database.views as views
 
 
 # Register blueprints for URL routing
-account  = Blueprint('account', __name__) 
-user     = Blueprint('user', __name__)
-ads      = Blueprint('ads', __name__)
-events   = Blueprint('events', __name__)
+account = Blueprint('account', __name__) 
+user = Blueprint('user', __name__)
+ads = Blueprint('ads', __name__)
+events = Blueprint('events', __name__)
+recommend = Blueprint('recommend', __name__) 
 
 
-json     = FlaskJSON()
-jwt      = JWTManager()
+# Runtime instances
+json = FlaskJSON()
+jwt = JWTManager()
 blacklist_tokens = set()
+
+
+@recommend.route('main-category', methods=['GET'])
+def recommend_by_main_category():
+   try:
+      user_fp = request.args.get('user_fingerprint')
+      list_main_category = views.User.get_recommended_main_category(user_fp)
+   except Exception as error:
+      return json_response(status_=404, error=str(erro))
+   return json_response(status_=200, priority_main_category=list_main_category)
 
 
 @jwt.token_in_blacklist_loader
 def is_expired_token(token):
    try:
-      jti         = token['jti']
+      jti = token['jti']
    except:
       return True
    return jti in blacklist_tokens
@@ -40,7 +52,7 @@ def register():
 @ads.route('/post', methods=['POST'])
 @jwt_required
 def post():
-   owner_id       = get_jwt_identity()
+   owner_id = get_jwt_identity()
    try:
       views.Ad.init_from_request(owner_id=owner_id, args=request.json)
    except Exception as error:
@@ -72,11 +84,11 @@ def login():
    except Exception as error:
       return json_response(status_=404, error=str(error))
 
-   expires        = timedelta(days=1)
-   access_token   = create_access_token(identity=user_id, expires_delta=expires, fresh=True)
+   expires = timedelta(days=1)
+   access_token = create_access_token(identity=user_id, expires_delta=expires, fresh=True)
    
    try:
-      access_jti  = get_jti(access_token)
+      access_jti = get_jti(access_token)
       if access_jti in blacklist_tokens:
          blacklist_tokens.remove(access_jti)
    except Exception as error:
@@ -87,7 +99,7 @@ def login():
 @account.route('/logout', methods=['DELETE'])
 @jwt_required
 def logout():
-   jti            = get_raw_jwt()['jti']
+   jti = get_raw_jwt()['jti']
    blacklist_tokens.add(jti)
    return json_response(status_=200, message='Successfully logged out')
 
@@ -95,13 +107,13 @@ def logout():
 @user.route('/personal-profile', methods=['GET'])
 @jwt_required
 def get_user_profile(): 
-   user_id        = get_jwt_identity()
-   user           = views.User.query.get(user_id)
+   user_id = get_jwt_identity()
+   user = views.User.query.get(user_id)
    if user == None:
       return json_response(status_=404, error='UserNotFound')
 
    try:
-      profile     = user.get_profile()
+      profile = user.get_profile()
    except Exception as error:
       return json_response(status_=404, error=str(error))
    return json_response(status_=200, profile=profile)
@@ -110,12 +122,12 @@ def get_user_profile():
 @ads.route('/infor', methods=['GET'])
 def get_ad_infor():
    try:
-      adlist_id   = request.args.get('adlist_id')
-      ad          = views.Ad.query.get(adlist_id)
+      adlist_id = request.args.get('adlist_id')
+      ad = views.Ad.query.get(adlist_id)
       if ad == None:
          raise Exception('ItemNotFound')
       else:
-         infor    = ad.get_infor()
+         infor = ad.get_infor()
    except Exception as error:
       return json_response(status_=404, error=str(error))
    return json_response(status_=200, infor=infor)
@@ -124,8 +136,8 @@ def get_ad_infor():
 @user.route('/edit', methods=['PUT'])
 @jwt_required
 def edit_user_profile():
-   user_id        = get_jwt_identity()
-   user           = views.User.query.get(user_id)
+   user_id = get_jwt_identity()
+   user = views.User.query.get(user_id)
    if user == None:
       return json_response(status_=404, error='UserNotFound')
    try:

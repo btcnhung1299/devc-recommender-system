@@ -25,29 +25,6 @@ for user, val in last_stats.items():
       stats[user]['last_activity'] = processing.datetime_from_str(val['last_activity'])
 
 
-def interest_by_category(user, cat):
-   num_periods = len(stats[user]['total']['CLICK'])
-   numerator = denominator = 0
-
-   for t in range(num_periods):
-      total_click_t = stats[user]['total']['CLICK'][t]
-      total_load_t = stats[user]['total']['LOAD'][t]
-            
-      interest_t = stats[user]['by_category'][cat]['CLICK'][t] * stats[user]['by_category'][cat]['LOAD'][t]
-      interest_t *= total_click_t
-      interest_t /= total_load_t
-
-      numerator += interest_t
-      denominator += total_click_t
-
-   return numerator / denominator 
-
-
-def recommend_main_category(user):
-   interests = [(interest_by_category(user, cat), cat) for cat in range(1, 13 + 1)]
-   interests.sort(reverse=True)
-   return [cat for interest, cat in interests]
-
 
 def create_new_history(user):
    stats[user] = dict()
@@ -69,16 +46,42 @@ def remove_oldest_session(user):
          stats[user]['by_category'][cat][event].append(0)    
 
 
-def update_lastest_session(user, event, cat):
+def update_lastest_session(user, event, cat, dt):
    stats[user]['total'][event][-1] += 1
    stats[user]['by_category'][cat][event][-1] += 1
+   stats[user]['last_activity'] = dt
 
 
-def update_stats_main_category(user, event_type, cat, dt):
+def update_stats_main_category(user, event_type, cat, event_time_str):
+   dt = processing.datetime_from_str(event_time_str)
    if user not in stats:
       create_new_history(user)
 
    new_session = (dt - stats[user]['last_activity']) > SESSION_DURATION
    if new_session:
       remove_oldest_session(user)
-   update_lastest_session(user, event_type, cat)
+   update_lastest_session(user, event_type, cat, dt)
+
+
+def interest_by_category(user, cat):
+   num_periods = len(stats[user]['total']['CLICK'])
+   numerator = denominator = 0
+
+   for t in range(num_periods):
+      total_click_t = stats[user]['total']['CLICK'][t]
+      total_load_t = stats[user]['total']['LOAD'][t]
+            
+      interest_t = stats[user]['by_category'][cat]['CLICK'][t] * stats[user]['by_category'][cat]['LOAD'][t]
+      interest_t *= total_click_t
+      interest_t /= total_load_t
+
+      numerator += interest_t
+      denominator += total_click_t
+
+   return numerator / denominator 
+
+
+def recommend_main_category(user):
+   interests = [(interest_by_category(user, cat), cat) for cat in range(1, NUM_CATEGORY + 1)]
+   interests.sort(reverse=True)
+   return [cat for interest, cat in interests]

@@ -20,12 +20,14 @@ processing.babel.init_app(app)
 - https://<domain_name.xyz>/
 - https://<domain_name.xyz>/user
 - https://<domain_name.xyz>/event
+- https://<domain_name.xyz>/recommendation
 """
 app.register_blueprint(api.account)
 app.register_blueprint(api.user, url_prefix='/user')
 app.register_blueprint(api.ads)
 app.register_blueprint(api.events, url_prefix='/event')
+app.register_blueprint(api.recommend, url_prefix='/recommendation')
 
 
 with app.app_context():
-   views.db.create_all()      # Initialize database instance
+   views.db.create_all()

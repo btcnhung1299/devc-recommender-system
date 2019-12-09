@@ -18,12 +18,12 @@ def is_valid_phone(phone):
 
 
 def datetime_from_str(dt_str):
-   return datetime.strptime(dt_str, '%d/%m/%Y %H:%M')
+   return datetime.strptime(dt_str, '%Y-%m-%d %H:%M:%S.%f')
 
 def date_from_str(date):
-   day, month, year  = date['day'], date['month'], date['year']
-   ddmmyy_str        = '{}/{}/{} 00:00'.format(day, month, year)
-   return datetime_from_str(ddmmyy_str).date()
+   day, month, year = date['day'], date['month'], date['year']
+   timestamp_str = '{}-{}-{} 00:00:00.00'.format(day, month, year)
+   return datetime_from_str(timestamp_str).date()
 
 
 def price_to_str(price):

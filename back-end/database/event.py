@@ -2,6 +2,7 @@ from datetime import datetime
 
 from .db_model import db
 from .utils import save_to_db
+from recommend_main_category import update_stats_main_category
 
 
 class Event(db.Model):
@@ -76,11 +77,12 @@ class Event(db.Model):
       filter_price         = args['filter_price']  
       filter_area_id       = args['filter_area_id']
 
-      new_ad_event = Event(event_type=event_type, event_name=event_name,
-                           adlist_id=adlist_id, ad_placement=ad_placement, ad_position=ad_position, ad_source=ad_source,
-                           page_device=page_device, page_number=page_number, page_name=page_name,
-                           user_fingerprint=user_fingerprint, event_client_time=event_client_time, event_server_time=event_server_time,
-                           filter_brand_id=filter_brand_id, filter_main_category_id=filter_main_category_id,
-                           filter_category_id=filter_category_id, filter_keyword=filter_keyword, filter_price=filter_price,
-                           filter_area_id=filter_area_id)
-      save_to_db(new_ad_event)
+      new_event = Event(event_type=event_type, event_name=event_name,
+                        adlist_id=adlist_id, ad_placement=ad_placement, ad_position=ad_position, ad_source=ad_source,
+                        page_device=page_device, page_number=page_number, page_name=page_name,
+                        user_fingerprint=user_fingerprint, event_client_time=event_client_time, event_server_time=event_server_time,
+                        filter_brand_id=filter_brand_id, filter_main_category_id=filter_main_category_id,
+                        filter_category_id=filter_category_id, filter_keyword=filter_keyword, filter_price=filter_price,
+                        filter_area_id=filter_area_id)
+      save_to_db(new_event)
+      update_stats_main_category(user_fingerprint, event_type, filter_main_category_id, event_server_time)
