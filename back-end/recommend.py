@@ -1,4 +1,5 @@
 import json
+import datetime
 
 import processing
 
@@ -14,13 +15,15 @@ stats = dict()
 #             'last_activity': '12/12/2019 00:00'}
 # `user_B` = {...}
 
-user_fp = ''
+NUM_CATEGORY = 13
+MAX_NUM_SESSION = 5
+SESSION_DURATION = datetime.timedelta(minutes=30)
+
 for user, val in last_stats.items():
       stats[user] = dict()
       stats[user]['by_category'], stats[user]['total'] = processing.stats_by_category(val)
       stats[user]['last_activity'] = processing.datetime_from_str(val['last_activity'])
-      user_fp = user
-      break
+
 
 def interest_by_category(user, cat):
    num_periods = len(stats[user]['total']['CLICK'])
@@ -39,12 +42,43 @@ def interest_by_category(user, cat):
 
    return numerator / denominator 
 
+
 def recommend_main_category(user):
    interests = [(interest_by_category(user, cat), cat) for cat in range(1, 13 + 1)]
    interests.sort(reverse=True)
    return [cat for interest, cat in interests]
 
 
-def update_stats_main_category(user, event_type, dt):
-   pass
+def create_new_history(user):
+   stats[user] = dict()
+   stats[user]['last_activity'] = datetime.datetime(year=2000, month=1, day=1)
+   stats[user]['total'] = { 'CLICK': [0], 'LOAD': [0] }
+   stats[user]['by_category'] = dict()
+   for cat in range(1, NUM_CATEGORY + 1):
+      stats[user]['by_category'][cat] = { 'CLICK': [0], 'LOAD': [0] }
+  
 
+def remove_oldest_session(user):
+   for event in stats[user]['total'].keys():
+      stats[user]['total'][event].pop(0)
+      stats[user]['total'][event].append(0)
+
+   for cat, event_stats in stats[user]['by_category'].items():
+      for event in event_stats.keys():
+         stats[user]['by_category'][cat][event].pop(0)
+         stats[user]['by_category'][cat][event].append(0)    
+
+
+def update_lastest_session(user, event, cat):
+   stats[user]['total'][event][-1] += 1
+   stats[user]['by_category'][cat][event][-1] += 1
+
+
+def update_stats_main_category(user, event_type, cat, dt):
+   if user not in stats:
+      create_new_history(user)
+
+   new_session = (dt - stats[user]['last_activity']) > SESSION_DURATION
+   if new_session:
+      remove_oldest_session(user)
+   update_lastest_session(user, event_type, cat)
