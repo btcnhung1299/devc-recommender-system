@@ -16,7 +16,7 @@ pip install virtualenv
 
 2. Clone the repository
 ```console
-git clone https://gitlab.com/cahop/chotot_recommendersys.git
+git clone https://github.com/btcnhung1299/devc-recommender-system.git
 ```
 
 3. Create and activate virtual environment inside the clone repo
@@ -38,7 +38,7 @@ flask run
 ```
 
 # Data Schema
-<img src="./db/db_schema.png" height="270">
+<img src="./database/db_schema.png" height="270">
 
 # API Reference
 See more at [API Document](./api_reference.md).
