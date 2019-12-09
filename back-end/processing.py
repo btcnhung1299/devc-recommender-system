@@ -2,7 +2,6 @@ import hashlib
 import re
 import json
 from datetime import datetime
-from collections import deque
 
 from flask_babel import Babel, format_timedelta, format_currency
 
@@ -82,17 +81,27 @@ def annot_param(category_id, name, value):
 def stats_by_category(stats_dict):
    ordered_sessions = sorted(stats_dict.keys())
    ordered_sessions.remove('last_activity')
-   d = dict()
+   num_sessions = len(ordered_sessions)
+
+   stats = dict()
+   total_clicks = [0] * num_sessions
+   total_loads = [0] * num_sessions
 
    for cat in range(1, 13 + 1):
-      d[cat] = { 'CLICK': deque(), 'LOAD': deque() }
+      stats[cat] = { 'CLICK': [], 'LOAD': [] }
 
-      for session in ordered_sessions:
+      for idx, session in enumerate(ordered_sessions):
          try:
             click_stats = stats_dict[session][str(float(cat))]
          except:
             click_stats = {'CLICK': 0.0, 'LOAD': 0.0}
-         d[cat]['CLICK'].appendleft(int(click_stats['CLICK']))
-         d[cat]['LOAD'].appendleft(int(click_stats['LOAD']))
 
-   return d
+         num_clicks = int(click_stats['CLICK'])
+         num_loads = int(click_stats['LOAD'])
+         total_clicks[idx] += num_clicks
+         total_loads[idx] += num_loads
+         
+         stats[cat]['CLICK'].append(num_clicks)
+         stats[cat]['LOAD'].append(num_loads)
+
+   return stats, {'CLICK': total_clicks, 'LOAD': total_loads}
