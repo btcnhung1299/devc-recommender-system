@@ -1,4 +1,4 @@
-# ChoTot Recommender System
+# Chotot Recommender System
 
 This repository is a team project to build a recommender system for Devoloper Circles Innovation Challenge: Ho Chi Minh City.
 
